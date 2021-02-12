@@ -3,9 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package labb3.Readers;
+package labb4.IO;
 
-import labb3.DataStructures.Friend;
+import labb4.DataStructures.Friend;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import labb3.Sortbynick;
+import labb4.Main.Sortbynick;
 
 /**
  *

@@ -3,13 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package labb3.DataStructures;
+package labb4.DataStructures;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import labb3.Readers.LogReader;
-import labb3.LogWriter;
+import labb4.IO.LogReader;
+import labb4.IO.LogWriter;
 
 /**
  *

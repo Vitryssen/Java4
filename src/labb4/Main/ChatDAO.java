@@ -3,10 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package labb3;
+package labb4.Main;
 
 import java.util.List;
-import labb3.DataStructures.Friend;
+import labb4.DataStructures.Friend;
 
 /**
  *
@@ -25,4 +25,5 @@ public interface ChatDAO {
     public String getReceiever();
     public String getChatUser();
     public boolean isChatLoaded(String nick);
+    public void newFriend(String newFriend);
 }

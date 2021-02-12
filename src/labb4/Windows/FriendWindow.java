@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package labb3.Windows;
+package labb4.Windows;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -12,8 +12,8 @@ import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.Border;
-import labb3.ChatDAOImp;
-import labb3.ChatDAO;
+import labb4.Main.ChatDAOImp;
+import labb4.Main.ChatDAO;
 
 /**
  *

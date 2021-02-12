@@ -3,15 +3,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package labb3.Readers;
+package labb4.IO;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import labb3.DataStructures.Friend;
-import labb3.DataStructures.Message;
+import labb4.DataStructures.Friend;
+import labb4.DataStructures.Message;
 
 
 /**

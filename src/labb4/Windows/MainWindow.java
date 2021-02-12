@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package labb3.Windows;
+package labb4.Windows;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
@@ -16,14 +16,20 @@ import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.border.Border;
-import labb3.ChatDAOImp;
-import labb3.DataStructures.Friend;
-import labb3.ChatDAO;
+import labb4.Main.ChatDAOImp;
+import labb4.DataStructures.Friend;
+import labb4.Main.ChatDAO;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
+import labb4.Socket.Client;
+import labb4.Socket.HostListener;
 /**
  *
  * @author André
@@ -37,7 +43,8 @@ public class MainWindow {
     boolean privateMode = false;
     private JCheckBox publicButton = top.getPublicButton();
     private JCheckBox privateButton = top.getPrivateButton();
-    public MainWindow(){
+    private Client test = new Client("chatbot.miun.se", 8000);
+    public MainWindow() throws IOException{
         f=new JFrame();  
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         f.add(top.getWindow(), BorderLayout.NORTH);
@@ -48,7 +55,35 @@ public class MainWindow {
         f.add(top.getShowPanel());
         f.add(top.getExitPanel());
         //----------------------------------------
-        populateFriendlist();
+        String value = "";
+        while(value.length() < 1){
+            value = JOptionPane.showInputDialog(null, "Chose nickname", 
+                        "Nickname: ", JOptionPane.INFORMATION_MESSAGE);
+            if(value == null){
+                value = "";
+            }
+            if(value.length() < 1)
+                JOptionPane.showMessageDialog(f, "Nickname cannot by empty");
+        }
+        test.connect();
+        test.register(value);
+        //------------------------------------------
+        Thread thread = new Thread() {
+            public void run(){
+              while(true){
+                  try {
+                      Thread.sleep(1000);
+                      List<String> testing = test.getFriends();
+                      for(int i = 0; i < testing.size(); i++)
+                        chatDao.newFriend(testing.get(i));
+                  } catch (InterruptedException ex) {
+                      Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+                  }
+              }
+            }
+         };
+        thread.start();
+       // populateFriendlist();
         addClickListiner();
         addPublicClick();
         addPrivateClick();

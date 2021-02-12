@@ -3,9 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package labb3;
+package labb4.Main;
 
-import labb3.Windows.MainWindow;
+import labb4.Windows.MainWindow;
 
 /**
  *

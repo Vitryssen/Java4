@@ -3,17 +3,18 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package labb3;
+package labb4.Main;
 
-import labb3.Readers.FriendsReader;
+import labb4.IO.LogWriter;
+import labb4.IO.FriendsReader;
 import java.awt.Font;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.List;
-import labb3.DataStructures.Chat;
-import labb3.DataStructures.Friend;
-import labb3.DataStructures.Message;
+import labb4.DataStructures.Chat;
+import labb4.DataStructures.Friend;
+import labb4.DataStructures.Message;
 
 /**
  *
@@ -22,13 +23,31 @@ import labb3.DataStructures.Message;
 public class ChatDAOImp implements ChatDAO{
     private String chatUser = "Eurakarte";
     private String chattingWith = "";
-    private final List<Friend> friends;
+    private final List<Friend> friends = new ArrayList<>();
     private List<Message> msgs;
     private final Chat allChats = new Chat(chatUser);
-    private final FriendsReader friendReader;
     public ChatDAOImp(){
-        friendReader = new FriendsReader();
-        friends = friendReader.getFriendList();
+        
+    }
+    public void newFriend(String newFriend){
+        Friend currentFriend = new Friend();
+        
+        String start = newFriend.substring(newFriend.indexOf("<", newFriend.indexOf("<")+2)+1);
+        currentFriend.setNick(start.substring(0, start.indexOf(">")));
+        //System.out.println(start);
+        System.out.println((start.substring(start.indexOf(">")+2).substring(start.indexOf(">"))));
+        //currentFriend.setNick(start.substring(0, start.indexOf(">")));
+        
+        /*start = newFriend.substring(newFriend.indexOf("<", newFriend.indexOf("<")+1)+1);
+        currentFriend.setName(start.substring(0, start.indexOf(">")));
+        
+        start = newFriend.substring(newFriend.indexOf("<"+1, newFriend.indexOf("<")+1)+1);
+        currentFriend.setIp(start.substring(0, start.indexOf(">")));
+        
+        start = newFriend.substring(newFriend.indexOf("<"+1, newFriend.indexOf("<"))+1);
+        currentFriend.setImage(start.substring(0, start.indexOf(">")));*/
+        
+        currentFriend.print();
     }
     @Override
     public List<Friend> getAllFriends(){

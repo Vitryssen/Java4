@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package labb3.Windows;
+package labb4.Windows;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
