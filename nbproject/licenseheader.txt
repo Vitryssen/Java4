@@ -1,0 +1,10 @@
+<#if licenseFirst??>
+${licenseFirst}
+</#if>
+${licensePrefix}André Nordlund
+${licensePrefix}2021-02-11
+${licensePrefix}Java 2
+${licensePrefix}Lab 3
+<#if licenseLast??>
+${licenseLast}
+</#if>
