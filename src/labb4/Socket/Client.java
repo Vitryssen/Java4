@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import labb4.DataStructures.Friend;
 
 /**
  *
@@ -31,6 +32,7 @@ public class Client implements HostListener {
     private final int port;
 
     private final String register = "<REGISTER><%1$s><%2$s><%3$s><IMAGE>";
+    private final String privateMessage = "<PRIVATE><%1$s><%2$s><%3$s>";
     private final String publicMessage = "<PUBLIC><%1$s><%2$s>";
     private final String logout = "<LOGOUT><%1$s>";
 
@@ -40,8 +42,8 @@ public class Client implements HostListener {
     private String ip;
     
     private List<String> messages = new ArrayList<>();
-    private List<String> friends = new ArrayList<>();
-
+    private List<Friend> friends = new ArrayList<>();
+    private List<String> publicMsg = new ArrayList<>();
     public Client(String host, int port) {
         this.host = host;
         this.port = port;
@@ -63,6 +65,13 @@ public class Client implements HostListener {
 
     public void sendPublicMessage(String messageText) {
         String message = String.format(publicMessage, nickName, messageText);
+        publicMsg.add(message);
+        out.println(message);
+        out.flush();
+    }
+    
+    public void sendPrivateMessage(String messageText, String receiver) {
+        String message = String.format(privateMessage, nickName,receiver, messageText);
         out.println(message);
         out.flush();
     }
@@ -108,17 +117,54 @@ public class Client implements HostListener {
     @Override
     public void messageRecieved(String message) {
         if(message.contains("<FRIEND>")){
-            friends.add(message);
+            addFriend(message);
         }
-        //System.out.println(message);
+        else if(message.contains("<LOGOUT>")){
+            removeFriend(message);
+        }
+        else if(message.contains("<PUBLIC>")){
+            System.out.println("Public msg "+message);
+            publicMsg.add(message);
+        }
+        else if(message.contains("<PRIVATE>")){
+            System.out.println("Private msg "+message);
+        }
         messages.add(message);
     }
-    
+    public void addFriend(String newFriend){
+        Friend currentFriend = new Friend();
+        String start = newFriend.substring(newFriend.indexOf("<", newFriend.indexOf("<")+2)+1);
+        
+        currentFriend.setNick(start.substring(0, start.indexOf(">")));
+        for(int i = 0; i < friends.size(); i++){
+            if(friends.get(i).getNick().equals(currentFriend.getNick()))
+                return;
+        }
+        start = start.substring(start.indexOf(">")+2);
+        currentFriend.setName(start.substring(0, start.indexOf(">")));
+        start = start.substring(start.indexOf(">")+2);
+        currentFriend.setIp(start.substring(0, start.indexOf(">")));
+        start = start.substring(start.indexOf(">")+2);
+        currentFriend.setImage(start.substring(0, start.indexOf(">")));
+        
+        friends.add(currentFriend);
+    }
+    public void removeFriend(String nick){
+        String newNick = nick.substring(nick.indexOf('>')+1);
+        newNick = newNick.substring(1, newNick.length()-1);
+        for(int i = 0; i < friends.size(); i++){
+            if(friends.get(i).getNick().equals(newNick))
+                friends.remove(i);
+        }
+    }
     public List<String> getInputStream(){
         return messages;
     }
-    public List<String> getFriends(){
+    public List<Friend> getFriends(){
         return friends;
+    }
+    public List<String> getPublicMessages(){
+        return publicMsg;
     }
     private class ListenerThread extends Thread {
 

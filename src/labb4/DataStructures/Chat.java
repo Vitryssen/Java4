@@ -5,11 +5,11 @@
  */
 package labb4.DataStructures;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import labb4.IO.LogReader;
-import labb4.IO.LogWriter;
 
 /**
  *
@@ -23,6 +23,25 @@ public class Chat {
     }
     public Map<String, List<Message>> getAllChats(){
         return userChats;
+    }
+    public void setChat(String nick, List<Message> newChat){
+        userChats.remove(nick);
+        userChats.put(nick, newChat);
+    }
+    public void addMessage(Message msg, String recipient){
+        List<Message> tempList = new ArrayList<>();
+        if(chatExists(recipient)){
+            System.out.println("exists");
+            tempList = userChats.get(recipient);
+            tempList.add(msg);
+            userChats.remove( recipient );
+            userChats.put( recipient, tempList);
+        }
+        else{
+            tempList.add(msg);
+            userChats.put(recipient, tempList);
+        }
+        System.out.println("new size "+userChats.get(recipient).size());
     }
     public void changeChatNick(String oldNick, String newNick){
         if(userChats.containsKey(oldNick)){

@@ -5,6 +5,7 @@
  */
 package labb4.Main;
 
+import java.io.IOException;
 import labb4.Windows.MainWindow;
 
 /**
@@ -12,7 +13,7 @@ import labb4.Windows.MainWindow;
  * @author André
  */
 public class Main{  
-    public static void main(String[] args) {  
+    public static void main(String[] args) throws IOException {  
        new MainWindow();
     }
 } 

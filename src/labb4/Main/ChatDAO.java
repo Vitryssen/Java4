@@ -14,7 +14,7 @@ import labb4.DataStructures.Friend;
  */
 public interface ChatDAO {
     public List<Friend> getAllFriends();
-    public List<String> getPublicChat();
+    //public List<String> getPublicChat();
     public List<String> getPrivateChat(String nick);
     public int getFriend(String name);
     public void changeFriendAttr(String user, String attribute, String newValue);
@@ -23,8 +23,9 @@ public interface ChatDAO {
     public void sendMessage(String msg);
     public void setReciever(String newReciever);
     public String getReceiever();
-    public String getChatUser();
+    public Friend getChatUser();
     public boolean isChatLoaded(String nick);
-    public void newFriend(String newFriend);
     public void saveChats();
+    public void setFriendlist(List<Friend> newList);
+    public void setPublicChat(List<String> newChat);
 }

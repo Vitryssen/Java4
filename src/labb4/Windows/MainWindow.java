@@ -29,6 +29,7 @@ import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
+import labb4.DataStructures.Message;
 import labb4.Socket.Client;
 /**
  *
@@ -48,47 +49,25 @@ public class MainWindow {
         f=new JFrame();  
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         f.add(top.getWindow(), BorderLayout.NORTH);
-        //Set bounds for panel with exit and chat buttons
+        
         top.getShowPanel().setBounds(111,45,110,70);
         top.getExitPanel().setBounds(6,45,100,40);
         //----------------------------------------
         f.add(top.getShowPanel());
         f.add(top.getExitPanel());
         //----------------------------------------
-        String value = "";
-        while(value.length() < 1){
-            value = JOptionPane.showInputDialog(null, "Chose nickname", 
-                        "Nickname: ", JOptionPane.INFORMATION_MESSAGE);
-            if(value == null){
-                value = "";
-            }
-            if(value.length() < 1)
-                JOptionPane.showMessageDialog(f, "Nickname cannot by empty");
-        }
+        String nick = nickNameInput();
+        chatDao.setChatUser(nick);
         test.connect();
-        test.register(value);
-        //------------------------------------------
-        Thread thread = new Thread() {
-            public void run(){
-              while(true){
-                  try {
-                      Thread.sleep(1000);
-                      List<String> testing = test.getFriends();
-                      for(int i = 0; i < testing.size(); i++)
-                        chatDao.newFriend(testing.get(i));
-                      populateFriendlist();
-                      addClickListiner();
-                  } catch (InterruptedException ex) {
-                      Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
-                  }
-              }
-            }
-         };
-        thread.start();
+        test.register(nick);
+        FriendsThread();
+        PublicThread();
+        //----------------------------------------
         addClickListiner();
         addPublicClick();
         addPrivateClick();
         addSendChatClick();
+        exitButtonEvent();
         //----------------------------------------
         JPanel bottom = new JPanel();
         bottom.add(chat.getWindow(), BorderLayout.WEST);
@@ -101,40 +80,93 @@ public class MainWindow {
         f.setVisible(true); 
         f.addComponentListener(new ComponentAdapter() {
             public void componentResized(ComponentEvent componentEvent) {
-                chat.getWindow().setPreferredSize(new Dimension(f.getWidth()-chatDao.getLongestNick()-50, f.getHeight()-80));
-                friends.getWindow().setPreferredSize(new Dimension(chatDao.getLongestNick()+10,f.getHeight()-80));
-                f.repaint();
+                resize();
             }
         });
         f.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
-                chatDao.saveChats();
-                f.dispose();
-                System.exit(0);
+                exit();
             }
         });
+    }
+    private void exit(){
+        chatDao.saveChats();
+        test.sendLogout();
+        f.dispose();
+        System.exit(0);
     }
     private void addSendChatClick(){
         chat.getMessageButton().addMouseListener(new MouseAdapter() { 
             public void mousePressed(MouseEvent me) { 
-                if(chat.getChatLabel().getText() != "Not chatting"){
+                if(chat.getChatLabel().getText() != "Not chatting" && chat.getMessageInput().getText().length() > 0){
+                    chat.getChatText().setText("");
                     if(me.getButton() == 1 && privateMode){
                         chatDao.sendMessage(chat.getMessageInput().getText());
+                        test.sendPrivateMessage(chat.getMessageInput().getText(), chatDao.getReceiever());
                         loadPrivateChat();
                         chat.getMessageInput().setText("");
                     }
                     else if(me.getButton() == 1 && !privateMode){
+                        chatDao.setReciever(chatDao.getChatUser().getNick());
                         chatDao.sendMessage(chat.getMessageInput().getText());
-                        List<String> messages = chatDao.getPublicChat();
+                        test.sendPublicMessage(chat.getMessageInput().getText());
+                        List<String> messages = chatDao.getPrivateChat(chatDao.getChatUser().getNick());
                         for(int i = 0; i < messages.size(); i++){
                             chat.getChatText().append(messages.get(i));
                         }
-                        chatDao.setReciever(chatDao.getChatUser());
                         chat.getMessageInput().setText("");
                     }
                 }
             } 
         });
+    }
+    public String nickNameInput(){
+        String value = "";
+        while(value.length() < 1){
+            value = JOptionPane.showInputDialog(null, "Chose nickname", 
+                        "Nickname: ", JOptionPane.INFORMATION_MESSAGE);
+            if(value == null){
+                value = "";
+            }
+            if(value.length() < 1)
+                JOptionPane.showMessageDialog(f, "Nickname cannot by empty");
+        }
+        return value;
+    }
+    public void FriendsThread() throws IOException{
+        Thread thread = new Thread() {
+            @Override
+            public void run(){
+              while(true){
+                  try {
+                      Thread.sleep(1000);
+                      chatDao.setFriendlist(test.getFriends());
+                      populateFriendlist();
+                      addClickListiner();
+                  } catch (InterruptedException ex) {
+                      Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+                  }
+              }
+            }
+         };
+        thread.start();
+    }
+    public void PublicThread() throws IOException{
+        Thread thread = new Thread() {
+            @Override
+            public void run(){
+              while(true){
+                  try {
+                        Thread.sleep(1000);
+                        chatDao.setPublicChat(test.getPublicMessages());
+                        loadPublicChat();
+                  } catch (InterruptedException ex) {
+                      Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+                  }
+              }
+            }
+         };
+        thread.start();
     }
     public void resize(){
         chat.getWindow().setPreferredSize(new Dimension(f.getWidth()-chatDao.getLongestNick()-50, f.getHeight()-80));
@@ -177,10 +209,7 @@ public class MainWindow {
             nameLabel.setName(currentName);
             friends.getNamePanel().add(nameLabel, BorderLayout.WEST);
         }
-        chat.getWindow().setPreferredSize(new Dimension(f.getWidth()-chatDao.getLongestNick()-50, f.getHeight()-80));
-        friends.getWindow().setPreferredSize(new Dimension(chatDao.getLongestNick()+10,f.getHeight()-80));
-        f.repaint();
-        //friends.getWindow().setPreferredSize(new Dimension(chatDao.getLongestNick()+10,f.getHeight()-80));
+        resize();
         friends.getNamePanel().revalidate();
         friends.getNamePanel().repaint();
     }
@@ -205,24 +234,26 @@ public class MainWindow {
     private void loadPrivateChat(){
         chat.getChatText().setText("");
         List<String> history = chatDao.getPrivateChat(chatDao.getReceiever());
-        chatDao.setReciever(chatDao.getReceiever());
         for(int i = 0; i < history.size(); i++){
             chat.getChatText().append(history.get(i));
         }
     }
-    private void addPublicClick(){
-        publicButton.addActionListener((ActionEvent e) -> {
-            chat.getChatText().setText(""); 
-            chat.getChatLabel().setText("Not chatting");
-            if(publicButton.isSelected()){
-                chat.getChatLabel().setText("Chatting publicly");
-                List<String> messages = chatDao.getPublicChat();
-                for(int i = 0; i < messages.size(); i++){
-                    chat.getChatText().append(messages.get(i));
-                }
-                chatDao.setReciever(chatDao.getChatUser());
-                
+    private void loadPublicChat(){
+        chat.getChatText().setText("");
+        if(publicButton.isSelected()){
+            chatDao.setReciever(chatDao.getChatUser().getNick());
+            chat.getChatLabel().setText("Chatting publicly");
+            List<String> messages = chatDao.getPrivateChat(chatDao.getChatUser().getNick());
+            for(int i = 0; i < messages.size(); i++){
+                chat.getChatText().append(messages.get(i));
             }
+        }
+    }
+    private void addPublicClick(){
+        publicButton.addActionListener((ActionEvent e) -> { 
+            chat.getChatLabel().setText("Not chatting");
+            chat.getChatText().setText("");
+            loadPublicChat();
             privateButton.setSelected(false);
             privateMode = false;
             top.getShowPanel().setVisible(false);
@@ -237,6 +268,11 @@ public class MainWindow {
             chat.getChatText().setText("");
             top.getShowPanel().setVisible(false);
             top.getExitPanel().setVisible(false);
+        });
+    }
+    private void exitButtonEvent(){
+        top.getExitButton().addActionListener((ActionEvent e) -> {
+            exit();
         });
     }
 }

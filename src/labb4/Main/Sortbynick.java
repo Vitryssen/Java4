@@ -14,6 +14,8 @@ import java.util.Comparator;
  */
 public class Sortbynick implements Comparator<Friend>{
     public int compare(Friend a, Friend b){
-        return a.getNick().compareTo(b.getNick());
-    }
+        String alower = a.getNick().toLowerCase();
+        String blower = b.getNick().toLowerCase();
+        return alower.compareTo(blower); //compare a.getNick() if you wish to sort
+    }                                    //uppercase before lowercase
 }

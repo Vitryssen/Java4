@@ -65,6 +65,7 @@ public class LogReader {
             }
             userChats.put(orgName, loadedMsgs); //Saves the chat to the given username
             loadedMsgs = new ArrayList<Message>();
+            fr.close();
         }
         catch (FileNotFoundException ex) 
         {

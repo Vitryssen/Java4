@@ -10,6 +10,7 @@ import java.awt.Font;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import labb4.DataStructures.Chat;
@@ -21,44 +22,24 @@ import labb4.DataStructures.Message;
  * @author André
  */
 public class ChatDAOImp implements ChatDAO{
-    private String chatUser = "Eurakarte";
+    private Friend chatUser = new Friend();
     private String chattingWith = "";
-    private final List<Friend> friends = new ArrayList<>();
+    private List<Friend> friends = new ArrayList<>();
     private List<Message> msgs;
-    private final Chat allChats = new Chat(chatUser);
+    private final Chat allChats = new Chat(chatUser.getNick());
     public ChatDAOImp(){
         
-    }
-    public void newFriend(String newFriend){
-        Friend currentFriend = new Friend();
-        String start = newFriend.substring(newFriend.indexOf("<", newFriend.indexOf("<")+2)+1);
-        
-        currentFriend.setNick(start.substring(0, start.indexOf(">")));
-        for(int i = 0; i < friends.size(); i++){
-            if(friends.get(i).getNick().equals(currentFriend.getNick()))
-                return;
-        }
-        start = start.substring(start.indexOf(">")+2);
-        currentFriend.setName(start.substring(0, start.indexOf(">")));
-        start = start.substring(start.indexOf(">")+2);
-        currentFriend.setIp(start.substring(0, start.indexOf(">")));
-        start = start.substring(start.indexOf(">")+2);
-        currentFriend.setImage(start.substring(0, start.indexOf(">")));
-        
-        friends.add(currentFriend);
-        //currentFriend.print();
     }
     @Override
     public void saveChats(){
         Map<String, List<Message>> chats = allChats.getAllChats();
         for(String key: chats.keySet()){
             Friend newFriend = new Friend();
-            newFriend.setNick(chatUser);
             for(int i = 0; i < friends.size(); i++){
                 if(friends.get(i).getNick().equals(key))
                     newFriend = friends.get(i);
             }
-            new LogWriter(newFriend, chats.get(key));
+            new LogWriter(chatUser, chats.get(key));
         }
     }
     @Override
@@ -93,7 +74,6 @@ public class ChatDAOImp implements ChatDAO{
     public int getLongestNick(){
         int previous = 0;
         for(int i = 0; i < friends.size(); i++){
-            //System.out.println(friendList.getFriendList().get(i).getNick());
             String text = friends.get(i).getNick()+friends.get(i).getTag();
             AffineTransform affinetransform = new AffineTransform();     
             FontRenderContext frc = new FontRenderContext(affinetransform,true,true);     
@@ -104,17 +84,19 @@ public class ChatDAOImp implements ChatDAO{
         return previous;
     }
 
-    @Override
+    /*@Override
     public List<String> getPublicChat() {
         List<String> returnList = new ArrayList<>();
         msgs = allChats.getMessages();
         for(int i = 0; i < msgs.size(); i++){
             Friend author = msgs.get(i).getAuthor();
-            String newString = "<"+author.getNick()+author.getTag()+"> "+msgs.get(i).getMessage()+"\n";
+            String newString = "";
+            if(author.getNick().length() > 0)
+                newString = "<"+author.getNick()+author.getTag()+"> "+msgs.get(i).getMessage()+"\n";
             returnList.add(newString);
         }
         return returnList;
-    }
+    }*/
     @Override
     public List<String> getPrivateChat(String nick) { 
         List<String> returnList = new ArrayList<>();
@@ -130,15 +112,13 @@ public class ChatDAOImp implements ChatDAO{
     }
     @Override
     public void setChatUser(String newUser) {
-        this.chatUser = newUser;
+        this.chatUser.setNick(newUser);
     }
     @Override
     public void sendMessage(String msg){
         if(msg.length() > 0){
-            Friend currentFriend = new Friend();
-            currentFriend.setNick(chatUser);
-            Message newMsg = new Message(currentFriend, msg);
-            msgs.add(newMsg);
+            Message newMsg = new Message(chatUser, msg);
+            allChats.addMessage(newMsg, chattingWith);
         }
     }
     @Override
@@ -150,11 +130,35 @@ public class ChatDAOImp implements ChatDAO{
         return chattingWith;
     }
     @Override
-    public String getChatUser(){
+    public Friend getChatUser(){
         return chatUser;
     }
     @Override
     public boolean isChatLoaded(String nick){
         return allChats.chatExists(nick);
+    }
+    @Override
+    public void setFriendlist(List<Friend> newList){
+        friends = newList;
+        Collections.sort(friends, new Sortbynick());
+    }
+    @Override
+    public void setPublicChat(List<String> newChat){
+        if(allChats.chatExists(chatUser.getNick())){
+            if(newChat.size() < allChats.getUserChat(chatUser.getNick()).size()){
+                return;
+            }
+        }
+        List<Message> newList = new ArrayList<>();
+        for(int i = 0; i < newChat.size(); i++){
+            Friend newFriend = new Friend();
+            String temp = newChat.get(i);
+            temp = temp.substring(temp.indexOf(">")+2);
+            newFriend.setNick(temp.substring(0, temp.indexOf(">")));
+            temp = temp.substring(temp.indexOf(">")+2);
+            Message newMsg = new Message(newFriend, temp.substring(0, temp.indexOf(">")));
+            newList.add(newMsg);
+        }
+        allChats.setChat(chatUser.getNick(), newList);
     }
 }
