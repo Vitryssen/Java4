@@ -21,14 +21,14 @@ public class Chat {
     public Chat(String nickname){
       this.author = nickname;
     }
+    public Map<String, List<Message>> getAllChats(){
+        return userChats;
+    }
     public void changeChatNick(String oldNick, String newNick){
         if(userChats.containsKey(oldNick)){
             userChats.put( newNick, userChats.remove( oldNick ) );
             changeNickInChat(oldNick, newNick);
         }
-    }
-    public void addMessage(Message msg){
-        new LogWriter(msg); //Fix better 
     }
     public List<Message> getMessages(){
         if(userChats.containsKey(author)){

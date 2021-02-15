@@ -21,7 +21,8 @@ import labb4.DataStructures.Friend;
 import labb4.Main.ChatDAO;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.io.BufferedReader;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -29,7 +30,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
 import labb4.Socket.Client;
-import labb4.Socket.HostListener;
 /**
  *
  * @author André
@@ -76,6 +76,8 @@ public class MainWindow {
                       List<String> testing = test.getFriends();
                       for(int i = 0; i < testing.size(); i++)
                         chatDao.newFriend(testing.get(i));
+                      populateFriendlist();
+                      addClickListiner();
                   } catch (InterruptedException ex) {
                       Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
                   }
@@ -83,7 +85,6 @@ public class MainWindow {
             }
          };
         thread.start();
-       // populateFriendlist();
         addClickListiner();
         addPublicClick();
         addPrivateClick();
@@ -103,6 +104,13 @@ public class MainWindow {
                 chat.getWindow().setPreferredSize(new Dimension(f.getWidth()-chatDao.getLongestNick()-50, f.getHeight()-80));
                 friends.getWindow().setPreferredSize(new Dimension(chatDao.getLongestNick()+10,f.getHeight()-80));
                 f.repaint();
+            }
+        });
+        f.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                chatDao.saveChats();
+                f.dispose();
+                System.exit(0);
             }
         });
     }
@@ -127,6 +135,11 @@ public class MainWindow {
                 }
             } 
         });
+    }
+    public void resize(){
+        chat.getWindow().setPreferredSize(new Dimension(f.getWidth()-chatDao.getLongestNick()-50, f.getHeight()-80));
+        friends.getWindow().setPreferredSize(new Dimension(chatDao.getLongestNick()+10,f.getHeight()-80));
+        f.repaint();
     }
     private void popUp(String user){
         String[] options = {"Fullname","Image"};
@@ -156,6 +169,7 @@ public class MainWindow {
         }
     }
     private void populateFriendlist(){
+        friends.getNamePanel().removeAll();
         for(int i = 0; i < chatDao.getAllFriends().size(); i++){
             Friend currentFriend = chatDao.getAllFriends().get(i);
             String currentName = currentFriend.getNick();
@@ -163,6 +177,12 @@ public class MainWindow {
             nameLabel.setName(currentName);
             friends.getNamePanel().add(nameLabel, BorderLayout.WEST);
         }
+        chat.getWindow().setPreferredSize(new Dimension(f.getWidth()-chatDao.getLongestNick()-50, f.getHeight()-80));
+        friends.getWindow().setPreferredSize(new Dimension(chatDao.getLongestNick()+10,f.getHeight()-80));
+        f.repaint();
+        //friends.getWindow().setPreferredSize(new Dimension(chatDao.getLongestNick()+10,f.getHeight()-80));
+        friends.getNamePanel().revalidate();
+        friends.getNamePanel().repaint();
     }
     private void addClickListiner(){
         for(int i = 0; i < friends.getNamePanel().getComponentCount(); i++){

@@ -16,10 +16,6 @@ public class Message {
         this.author = user;
         this.message = newMessage;
     }
-
-    public Message() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
     public Friend getAuthor(){
         return author;
     }

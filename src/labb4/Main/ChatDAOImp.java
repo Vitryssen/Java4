@@ -6,12 +6,12 @@
 package labb4.Main;
 
 import labb4.IO.LogWriter;
-import labb4.IO.FriendsReader;
 import java.awt.Font;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import labb4.DataStructures.Chat;
 import labb4.DataStructures.Friend;
 import labb4.DataStructures.Message;
@@ -31,23 +31,35 @@ public class ChatDAOImp implements ChatDAO{
     }
     public void newFriend(String newFriend){
         Friend currentFriend = new Friend();
-        
         String start = newFriend.substring(newFriend.indexOf("<", newFriend.indexOf("<")+2)+1);
+        
         currentFriend.setNick(start.substring(0, start.indexOf(">")));
-        //System.out.println(start);
-        System.out.println((start.substring(start.indexOf(">")+2).substring(start.indexOf(">"))));
-        //currentFriend.setNick(start.substring(0, start.indexOf(">")));
-        
-        /*start = newFriend.substring(newFriend.indexOf("<", newFriend.indexOf("<")+1)+1);
+        for(int i = 0; i < friends.size(); i++){
+            if(friends.get(i).getNick().equals(currentFriend.getNick()))
+                return;
+        }
+        start = start.substring(start.indexOf(">")+2);
         currentFriend.setName(start.substring(0, start.indexOf(">")));
-        
-        start = newFriend.substring(newFriend.indexOf("<"+1, newFriend.indexOf("<")+1)+1);
+        start = start.substring(start.indexOf(">")+2);
         currentFriend.setIp(start.substring(0, start.indexOf(">")));
+        start = start.substring(start.indexOf(">")+2);
+        currentFriend.setImage(start.substring(0, start.indexOf(">")));
         
-        start = newFriend.substring(newFriend.indexOf("<"+1, newFriend.indexOf("<"))+1);
-        currentFriend.setImage(start.substring(0, start.indexOf(">")));*/
-        
-        currentFriend.print();
+        friends.add(currentFriend);
+        //currentFriend.print();
+    }
+    @Override
+    public void saveChats(){
+        Map<String, List<Message>> chats = allChats.getAllChats();
+        for(String key: chats.keySet()){
+            Friend newFriend = new Friend();
+            newFriend.setNick(chatUser);
+            for(int i = 0; i < friends.size(); i++){
+                if(friends.get(i).getNick().equals(key))
+                    newFriend = friends.get(i);
+            }
+            new LogWriter(newFriend, chats.get(key));
+        }
     }
     @Override
     public List<Friend> getAllFriends(){
@@ -126,7 +138,6 @@ public class ChatDAOImp implements ChatDAO{
             Friend currentFriend = new Friend();
             currentFriend.setNick(chatUser);
             Message newMsg = new Message(currentFriend, msg);
-            new LogWriter(newMsg);
             msgs.add(newMsg);
         }
     }
