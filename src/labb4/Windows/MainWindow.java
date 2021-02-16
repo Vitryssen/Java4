@@ -29,7 +29,6 @@ import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
-import labb4.DataStructures.Message;
 import labb4.Socket.Client;
 /**
  *
@@ -44,7 +43,7 @@ public class MainWindow {
     boolean privateMode = false;
     private JCheckBox publicButton = top.getPublicButton();
     private JCheckBox privateButton = top.getPrivateButton();
-    private Client test = new Client("chatbot.miun.se", 8000);
+    private Client test = new Client("0.0.0.0", 8000);//Skolan : "chatbot.miun.se", 8000 hemma: "0.0.0.0", 8000
     public MainWindow() throws IOException{
         f=new JFrame();  
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -58,6 +57,7 @@ public class MainWindow {
         //----------------------------------------
         String nick = nickNameInput();
         chatDao.setChatUser(nick);
+        f.setTitle(nick);
         test.connect();
         test.register(nick);
         FriendsThread();
