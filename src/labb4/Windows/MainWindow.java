@@ -16,9 +16,9 @@ import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.border.Border;
-import labb4.Main.ChatDAOImp;
+import labb4.DAO.ChatDAOImp;
 import labb4.DataStructures.Friend;
-import labb4.Main.ChatDAO;
+import labb4.DAO.ChatDAO;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.WindowAdapter;
@@ -29,39 +29,47 @@ import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
+import labb4.DAO.FriendDAO;
+import labb4.DAO.FriendDAOImp;
 import labb4.Socket.Client;
 /**
  *
  * @author André
  */
 public class MainWindow {
+    //Main window
     private JFrame f;  
+    //DAO's
     private ChatDAO chatDao = new ChatDAOImp();
-    private TopWindow top = new TopWindow();
-    private ChatWindow chat = new ChatWindow();
-    private FriendWindow friends = new FriendWindow();
+    private FriendDAO friendDao = new FriendDAOImp();
+    //Windows
+    private TopWindow topWindow = new TopWindow();
+    private ChatWindow chatWindow = new ChatWindow();
+    private FriendWindow friendsWindow = new FriendWindow();
+    //Components
+    private JCheckBox publicButton = topWindow.getPublicButton();
+    private JCheckBox privateButton = topWindow.getPrivateButton();
+    //Variables
     boolean privateMode = false;
-    private JCheckBox publicButton = top.getPublicButton();
-    private JCheckBox privateButton = top.getPrivateButton();
-    private Client test = new Client("0.0.0.0", 8000);//Skolan : "chatbot.miun.se", 8000 hemma: "0.0.0.0", 8000
+    //Network socket
+    private Client network = new Client("chatbot.miun.se", 8000);//Skolan : "chatbot.miun.se", 8000 hemma: "0.0.0.0", 8000
     public MainWindow() throws IOException{
         f=new JFrame();  
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        f.add(top.getWindow(), BorderLayout.NORTH);
+        f.add(topWindow.getWindow(), BorderLayout.NORTH);
         
-        top.getShowPanel().setBounds(111,45,110,70);
-        top.getExitPanel().setBounds(6,45,100,40);
+        topWindow.getShowPanel().setBounds(111,45,110,70);
+        topWindow.getExitPanel().setBounds(6,45,100,40);
         //----------------------------------------
-        f.add(top.getShowPanel());
-        f.add(top.getExitPanel());
+        f.add(topWindow.getShowPanel());
+        f.add(topWindow.getExitPanel());
         //----------------------------------------
         String nick = nickNameInput();
         chatDao.setChatUser(nick);
         f.setTitle(nick);
-        test.connect();
-        test.register(nick);
-        FriendsThread();
-        PublicThread();
+        network.connect();
+        network.register(nick);
+        readThread();
         //----------------------------------------
         addClickListiner();
         addPublicClick();
@@ -70,8 +78,8 @@ public class MainWindow {
         exitButtonEvent();
         //----------------------------------------
         JPanel bottom = new JPanel();
-        bottom.add(chat.getWindow(), BorderLayout.WEST);
-        bottom.add(friends.getWindow(), BorderLayout.EAST);
+        bottom.add(chatWindow.getWindow(), BorderLayout.WEST);
+        bottom.add(friendsWindow.getWindow(), BorderLayout.EAST);
         //-----------------------------------------
         Border blackline = BorderFactory.createLineBorder(Color.black);
         bottom.setBorder(blackline);
@@ -89,32 +97,37 @@ public class MainWindow {
             }
         });
     }
+    public void resize(){
+        chatWindow.getWindow().setPreferredSize(new Dimension(f.getWidth()-friendDao.getLongestNick()-60, f.getHeight()-80));
+        friendsWindow.getWindow().setPreferredSize(new Dimension(friendDao.getLongestNick()+30,f.getHeight()-80));
+        f.repaint();
+    }
     private void exit(){
         chatDao.saveChats();
-        test.sendLogout();
+        network.sendLogout();
         f.dispose();
         System.exit(0);
     }
     private void addSendChatClick(){
-        chat.getMessageButton().addMouseListener(new MouseAdapter() { 
+        chatWindow.getMessageButton().addMouseListener(new MouseAdapter() { 
             public void mousePressed(MouseEvent me) { 
-                if(chat.getChatLabel().getText() != "Not chatting" && chat.getMessageInput().getText().length() > 0){
-                    chat.getChatText().setText("");
+                if(chatWindow.getChatLabel().getText() != "Not chatting" && chatWindow.getMessageInput().getText().length() > 0){
+                    chatWindow.getChatText().setText("");
                     if(me.getButton() == 1 && privateMode){
-                        chatDao.sendMessage(chat.getMessageInput().getText());
-                        test.sendPrivateMessage(chat.getMessageInput().getText(), chatDao.getReceiever());
+                        chatDao.sendMessage(chatWindow.getMessageInput().getText());
+                        network.sendPrivateMessage(chatWindow.getMessageInput().getText(), chatDao.getReceiever());
                         loadPrivateChat();
-                        chat.getMessageInput().setText("");
+                        chatWindow.getMessageInput().setText("");
                     }
                     else if(me.getButton() == 1 && !privateMode){
                         chatDao.setReciever(chatDao.getChatUser().getNick());
-                        chatDao.sendMessage(chat.getMessageInput().getText());
-                        test.sendPublicMessage(chat.getMessageInput().getText());
-                        List<String> messages = chatDao.getPrivateChat(chatDao.getChatUser().getNick());
+                        chatDao.sendMessage(chatWindow.getMessageInput().getText());
+                        network.sendPublicMessage(chatWindow.getMessageInput().getText());
+                        List<String> messages = chatDao.getChat(chatDao.getChatUser().getNick());
                         for(int i = 0; i < messages.size(); i++){
-                            chat.getChatText().append(messages.get(i));
+                            chatWindow.getChatText().append(messages.get(i));
                         }
-                        chat.getMessageInput().setText("");
+                        chatWindow.getMessageInput().setText("");
                     }
                 }
             } 
@@ -133,14 +146,14 @@ public class MainWindow {
         }
         return value;
     }
-    public void FriendsThread() throws IOException{
+    public void readThread() throws IOException{
         Thread thread = new Thread() {
             @Override
             public void run(){
               while(true){
                   try {
                       Thread.sleep(1000);
-                      chatDao.setFriendlist(test.getFriends());
+                      friendDao.setFriendlist(network.getFriends());
                       populateFriendlist();
                       addClickListiner();
                   } catch (InterruptedException ex) {
@@ -150,28 +163,6 @@ public class MainWindow {
             }
          };
         thread.start();
-    }
-    public void PublicThread() throws IOException{
-        Thread thread = new Thread() {
-            @Override
-            public void run(){
-              while(true){
-                  try {
-                        Thread.sleep(1000);
-                        chatDao.setPublicChat(test.getPublicMessages());
-                        loadPublicChat();
-                  } catch (InterruptedException ex) {
-                      Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
-                  }
-              }
-            }
-         };
-        thread.start();
-    }
-    public void resize(){
-        chat.getWindow().setPreferredSize(new Dimension(f.getWidth()-chatDao.getLongestNick()-50, f.getHeight()-80));
-        friends.getWindow().setPreferredSize(new Dimension(chatDao.getLongestNick()+10,f.getHeight()-80));
-        f.repaint();
     }
     private void popUp(String user){
         String[] options = {"Fullname","Image"};
@@ -186,36 +177,36 @@ public class MainWindow {
                     "New value for "+attr, JOptionPane.INFORMATION_MESSAGE);
             if(value.length() == 0)
                 return;
-            chatDao.changeFriendAttr(user, attr, value);
+            friendDao.changeFriendAttr(user, attr, value);
             if("Nickname".equals(attr)){
-                friends.getNamePanel().removeAll();
+                friendsWindow.getNamePanel().removeAll();
                 populateFriendlist();
                 addClickListiner();
-                friends.getNamePanel().revalidate();
+                friendsWindow.getNamePanel().revalidate();
                 if(privateMode){
                     chatDao.setReciever(value);
                     loadPrivateChat();
-                    chat.getChatLabel().setText("Chatting with "+chatDao.getAllFriends().get(chatDao.getFriend(value)).getNick()+chatDao.getAllFriends().get(chatDao.getFriend(value)).getTag());
+                    chatWindow.getChatLabel().setText("Chatting with "+friendDao.getAllFriends().get(friendDao.getIndexOfFriend(value)).getNick()+friendDao.getAllFriends().get(friendDao.getIndexOfFriend(value)).getTag());
                 }
             }
         }
     }
     private void populateFriendlist(){
-        friends.getNamePanel().removeAll();
-        for(int i = 0; i < chatDao.getAllFriends().size(); i++){
-            Friend currentFriend = chatDao.getAllFriends().get(i);
+        friendsWindow.getNamePanel().removeAll();
+        for(int i = 0; i < friendDao.getAllFriends().size(); i++){
+            Friend currentFriend = friendDao.getAllFriends().get(i);
             String currentName = currentFriend.getNick();
             JLabel nameLabel = new JLabel(currentName+currentFriend.getTag());
             nameLabel.setName(currentName);
-            friends.getNamePanel().add(nameLabel, BorderLayout.WEST);
+            friendsWindow.getNamePanel().add(nameLabel, BorderLayout.WEST);
         }
         resize();
-        friends.getNamePanel().revalidate();
-        friends.getNamePanel().repaint();
+        friendsWindow.getNamePanel().revalidate();
+        friendsWindow.getNamePanel().repaint();
     }
     private void addClickListiner(){
-        for(int i = 0; i < friends.getNamePanel().getComponentCount(); i++){
-            friends.getNamePanel().getComponent(i).addMouseListener(new MouseAdapter() { 
+        for(int i = 0; i < friendsWindow.getNamePanel().getComponentCount(); i++){
+            friendsWindow.getNamePanel().getComponent(i).addMouseListener(new MouseAdapter() { 
                 public void mousePressed(MouseEvent me) { 
                     if(me.getButton() == 3){
                         popUp(me.getComponent().getName());
@@ -223,8 +214,8 @@ public class MainWindow {
                     else if(privateMode == true && me.getButton() == 1){
                         chatDao.setReciever(me.getComponent().getName());
                         JLabel labelText = (JLabel) me.getComponent();
-                        chat.getChatLabel().setText("Chatting with "+labelText.getText());
-                        chat.getChatText().setText("");
+                        chatWindow.getChatLabel().setText("Chatting with "+labelText.getText());
+                        chatWindow.getChatText().setText("");
                         loadPrivateChat();
                     }
                 } 
@@ -232,46 +223,46 @@ public class MainWindow {
         }
     }
     private void loadPrivateChat(){
-        chat.getChatText().setText("");
-        List<String> history = chatDao.getPrivateChat(chatDao.getReceiever());
+        chatWindow.getChatText().setText("");
+        List<String> history = chatDao.getChat(chatDao.getReceiever());
         for(int i = 0; i < history.size(); i++){
-            chat.getChatText().append(history.get(i));
+            chatWindow.getChatText().append(history.get(i));
         }
     }
     private void loadPublicChat(){
-        chat.getChatText().setText("");
+        chatWindow.getChatText().setText("");
         if(publicButton.isSelected()){
             chatDao.setReciever(chatDao.getChatUser().getNick());
-            chat.getChatLabel().setText("Chatting publicly");
-            List<String> messages = chatDao.getPrivateChat(chatDao.getChatUser().getNick());
+            chatWindow.getChatLabel().setText("Chatting publicly");
+            List<String> messages = chatDao.getChat(chatDao.getChatUser().getNick());
             for(int i = 0; i < messages.size(); i++){
-                chat.getChatText().append(messages.get(i));
+                chatWindow.getChatText().append(messages.get(i));
             }
         }
     }
     private void addPublicClick(){
         publicButton.addActionListener((ActionEvent e) -> { 
-            chat.getChatLabel().setText("Not chatting");
-            chat.getChatText().setText("");
+            chatWindow.getChatLabel().setText("Not chatting");
+            chatWindow.getChatText().setText("");
             loadPublicChat();
             privateButton.setSelected(false);
             privateMode = false;
-            top.getShowPanel().setVisible(false);
-            top.getExitPanel().setVisible(false);
+            topWindow.getShowPanel().setVisible(false);
+            topWindow.getExitPanel().setVisible(false);
         });
     }
     private void addPrivateClick(){
         privateButton.addActionListener((ActionEvent e) -> {
             privateMode = !privateMode;
-            chat.getChatLabel().setText("Not chatting");
+            chatWindow.getChatLabel().setText("Not chatting");
             publicButton.setSelected(false);
-            chat.getChatText().setText("");
-            top.getShowPanel().setVisible(false);
-            top.getExitPanel().setVisible(false);
+            chatWindow.getChatText().setText("");
+            topWindow.getShowPanel().setVisible(false);
+            topWindow.getExitPanel().setVisible(false);
         });
     }
     private void exitButtonEvent(){
-        top.getExitButton().addActionListener((ActionEvent e) -> {
+        topWindow.getExitButton().addActionListener((ActionEvent e) -> {
             exit();
         });
     }

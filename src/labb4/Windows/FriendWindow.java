@@ -11,16 +11,20 @@ import java.awt.Dimension;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.border.Border;
-import labb4.Main.ChatDAOImp;
-import labb4.Main.ChatDAO;
+import labb4.DAO.ChatDAOImp;
+import labb4.DAO.ChatDAO;
+import labb4.DAO.FriendDAO;
+import labb4.DAO.FriendDAOImp;
 
 /**
  *
  * @author André
  */
 public class FriendWindow extends JPanel {
-    ChatDAO chatDao = new ChatDAOImp();
+    private FriendDAO friendDao = new FriendDAOImp();
     private JPanel friends = new JPanel();
     private JPanel namePanel = new JPanel();
     public FriendWindow(){
@@ -33,8 +37,12 @@ public class FriendWindow extends JPanel {
         JLabel friendText = new JLabel("Friends list");
         
         friends.add(friendText, BorderLayout.NORTH);
-        friends.add(namePanel, BorderLayout.CENTER);
-        friends.setPreferredSize(new Dimension(chatDao.getLongestNick()+10, 200)); //width determined by the longest name
+        
+        JScrollPane scroll = new JScrollPane(namePanel);
+        scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        
+        friends.add(scroll, BorderLayout.CENTER);
+        friends.setPreferredSize(new Dimension(friendDao.getLongestNick()+30, 200)); //width determined by the longest name
     }
     public JPanel getWindow(){
         return friends;
