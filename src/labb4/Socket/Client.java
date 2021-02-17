@@ -15,8 +15,6 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import labb4.DataStructures.Friend;
 
 /**
@@ -44,6 +42,8 @@ public class Client implements HostListener {
     private List<String> messages = new ArrayList<>();
     private List<Friend> friends = new ArrayList<>();
     private List<String> publicMsg = new ArrayList<>();
+    private List<String> privateMsg = new ArrayList<>();
+    
     public Client(String host, int port) {
         this.host = host;
         this.port = port;
@@ -71,7 +71,7 @@ public class Client implements HostListener {
     }
     
     public void sendPrivateMessage(String messageText, String receiver) {
-        String message = String.format(privateMessage, nickName,receiver, messageText);
+        String message = String.format(privateMessage, nickName, receiver, messageText);
         out.println(message);
         out.flush();
     }
@@ -127,6 +127,7 @@ public class Client implements HostListener {
             publicMsg.add(message);
         }
         else if(message.contains("<PRIVATE>")){
+            privateMsg.add(message);
             System.out.println("Private msg "+message);
         }
         messages.add(message);

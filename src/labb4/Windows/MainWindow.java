@@ -29,6 +29,7 @@ import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
 import labb4.DAO.FriendDAO;
 import labb4.DAO.FriendDAOImp;
 import labb4.Socket.Client;
@@ -52,7 +53,7 @@ public class MainWindow {
     //Variables
     boolean privateMode = false;
     //Network socket
-    private Client network = new Client("chatbot.miun.se", 8000);//Skolan : "chatbot.miun.se", 8000 hemma: "0.0.0.0", 8000
+    private Client readerThread = new Client("chatbot.miun.se", 8000);//Skolan : "chatbot.miun.se", 8000 hemma: "0.0.0.0", 8000
     public MainWindow() throws IOException{
         f=new JFrame();  
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -67,8 +68,8 @@ public class MainWindow {
         String nick = nickNameInput();
         chatDao.setChatUser(nick);
         f.setTitle(nick);
-        network.connect();
-        network.register(nick);
+        readerThread.connect();
+        readerThread.register(nick);
         readThread();
         //----------------------------------------
         addClickListiner();
@@ -97,6 +98,28 @@ public class MainWindow {
             }
         });
     }
+    public void WriteThread(){
+        new Thread(new Runnable() {
+      public void run() {
+        while(true){
+          // Runs inside of the Swing UI thread
+          SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+              List<String> temp = readerThread.getPublicMessages();
+              for(int i = 0; i < temp.size(); i++){
+                  System.out.println(temp.get(i));
+              }
+            }
+          });
+
+          try {
+            java.lang.Thread.sleep(100);
+          }
+          catch(Exception e) { }
+        }
+      }
+    }).start();
+    }
     public void resize(){
         chatWindow.getWindow().setPreferredSize(new Dimension(f.getWidth()-friendDao.getLongestNick()-60, f.getHeight()-80));
         friendsWindow.getWindow().setPreferredSize(new Dimension(friendDao.getLongestNick()+30,f.getHeight()-80));
@@ -104,7 +127,7 @@ public class MainWindow {
     }
     private void exit(){
         chatDao.saveChats();
-        network.sendLogout();
+        readerThread.sendLogout();
         f.dispose();
         System.exit(0);
     }
@@ -115,14 +138,14 @@ public class MainWindow {
                     chatWindow.getChatText().setText("");
                     if(me.getButton() == 1 && privateMode){
                         chatDao.sendMessage(chatWindow.getMessageInput().getText());
-                        network.sendPrivateMessage(chatWindow.getMessageInput().getText(), chatDao.getReceiever());
+                        readerThread.sendPrivateMessage(chatWindow.getMessageInput().getText(), chatDao.getReceiever());
                         loadPrivateChat();
                         chatWindow.getMessageInput().setText("");
                     }
                     else if(me.getButton() == 1 && !privateMode){
                         chatDao.setReciever(chatDao.getChatUser().getNick());
                         chatDao.sendMessage(chatWindow.getMessageInput().getText());
-                        network.sendPublicMessage(chatWindow.getMessageInput().getText());
+                        readerThread.sendPublicMessage(chatWindow.getMessageInput().getText());
                         List<String> messages = chatDao.getChat(chatDao.getChatUser().getNick());
                         for(int i = 0; i < messages.size(); i++){
                             chatWindow.getChatText().append(messages.get(i));
@@ -153,7 +176,7 @@ public class MainWindow {
               while(true){
                   try {
                       Thread.sleep(1000);
-                      friendDao.setFriendlist(network.getFriends());
+                      friendDao.setFriendlist(readerThread.getFriends());
                       populateFriendlist();
                       addClickListiner();
                   } catch (InterruptedException ex) {
