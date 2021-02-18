@@ -149,7 +149,7 @@ public class Client implements HostListener {
         if(publicMode)
             chatDao.sendMessagePublic(newFriend, message);
         else
-            chatDao.sendMessagePrivate(newFriend, message);
+            chatDao.sendMessagePrivate(chatDao.getChatUser(), newFriend, message);
     }
     public void addFriend(String newFriend){
         Friend currentFriend = new Friend();

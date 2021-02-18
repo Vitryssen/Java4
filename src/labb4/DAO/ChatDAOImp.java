@@ -20,7 +20,7 @@ import labb4.DataStructures.Message;
 public class ChatDAOImp implements ChatDAO{
     private FriendDAO friendDao = new FriendDAOImp();
     private Friend chatUser = new Friend();
-    private String chattingWith = "";
+    private Friend chattingWith = new Friend();
     private final Chat allChats = new Chat(chatUser.getNick());
     public ChatDAOImp(){
         
@@ -56,25 +56,25 @@ public class ChatDAOImp implements ChatDAO{
         this.chatUser.setNick(newUser);
     }
     @Override
-    public void sendMessagePublic(Friend newFriend, String msg){
+    public void sendMessagePublic(Friend author, String msg){
         if(msg.length() > 0){
-            Message newMsg = new Message(newFriend, msg);
+            Message newMsg = new Message(author, msg);
             allChats.addMessage(newMsg, chatUser.getNick());
         }
     }
     @Override
-    public void sendMessagePrivate(Friend newFriend, String msg){
+    public void sendMessagePrivate(Friend author, Friend receiver, String msg){
         if(msg.length() > 0){
-            Message newMsg = new Message(newFriend, msg);
-            allChats.addMessage(newMsg, newFriend.getNick());
+            Message newMsg = new Message(author, msg);
+            allChats.addMessage(newMsg, receiver.getNick());
         }
     }
     @Override
     public void setReciever(String newReciever){
-        chattingWith = newReciever;
+        chattingWith.setNick(newReciever);
     }
     @Override
-    public String getReceiever(){
+    public Friend getReceiever(){
         return chattingWith;
     }
     @Override

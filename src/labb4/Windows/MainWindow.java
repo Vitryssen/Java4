@@ -148,14 +148,14 @@ public class MainWindow {
                 if(chatWindow.getChatLabel().getText() != "Not chatting" && chatWindow.getMessageInput().getText().length() > 0){
                     chatWindow.getChatText().setText("");
                     if(me.getButton() == 1 && privateMode){
-                        chatDao.sendMessage(chatWindow.getMessageInput().getText());
-                        readerThread.sendPrivateMessage(chatWindow.getMessageInput().getText(), chatDao.getReceiever());
+                        chatDao.sendMessagePrivate(chatDao.getChatUser(),chatDao.getReceiever(),chatWindow.getMessageInput().getText());
+                        readerThread.sendPrivateMessage(chatWindow.getMessageInput().getText(), chatDao.getReceiever().getNick());
                         loadPrivateChat();
                         chatWindow.getMessageInput().setText("");
                     }
                     else if(me.getButton() == 1 && !privateMode){
                         chatDao.setReciever(chatDao.getChatUser().getNick());
-                        chatDao.sendMessage(chatWindow.getMessageInput().getText());
+                        chatDao.sendMessagePublic(chatDao.getChatUser(),chatWindow.getMessageInput().getText());
                         readerThread.sendPublicMessage(chatWindow.getMessageInput().getText());
                         List<String> messages = chatDao.getChat(chatDao.getChatUser().getNick());
                         for(int i = 0; i < messages.size(); i++){
@@ -228,7 +228,7 @@ public class MainWindow {
     }
     private void loadPrivateChat(){
         chatWindow.getChatText().setText("");
-        List<String> history = chatDao.getChat(chatDao.getReceiever());
+        List<String> history = chatDao.getChat(chatDao.getReceiever().getNick());
         for(int i = 0; i < history.size(); i++){
             chatWindow.getChatText().append(history.get(i));
         }
@@ -238,7 +238,7 @@ public class MainWindow {
         if(publicButton.isSelected()){
             chatDao.setReciever(chatDao.getChatUser().getNick());
             chatWindow.getChatLabel().setText("Chatting publicly");
-            List<String> messages = chatDao.getChat(chatDao.getReceiever());
+            List<String> messages = chatDao.getChat(chatDao.getReceiever().getNick());
             for(int i = 0; i < messages.size(); i++){
                 chatWindow.getChatText().append(messages.get(i));
             }

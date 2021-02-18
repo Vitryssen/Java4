@@ -15,12 +15,12 @@ import labb4.DataStructures.Friend;
 public interface ChatDAO {
     //Functions
     public void sendMessagePublic(Friend newFriend, String msg);
-    public void sendMessagePrivate(Friend newFriend, String msg);
+    public void sendMessagePrivate(Friend author, Friend receiver, String msg);
     public void saveChats();
     public List<String> convertToServer();
     //Getters
     public List<String> getChat(String nick);
-    public String getReceiever();
+    public Friend getReceiever();
     public Friend getChatUser();
     //Setters
     public void setReciever(String newReciever);
