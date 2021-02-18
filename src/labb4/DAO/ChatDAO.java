@@ -16,7 +16,6 @@ public interface ChatDAO {
     //Functions
     public void sendMessagePublic(Friend newFriend, String msg);
     public void sendMessagePrivate(Friend newFriend, String msg);
-    public void sendMessage(String msg);
     public void saveChats();
     public List<String> convertToServer();
     //Getters
