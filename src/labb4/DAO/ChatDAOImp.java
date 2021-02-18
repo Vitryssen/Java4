@@ -5,10 +5,10 @@
  */
 package labb4.DAO;
 
+import java.util.Map;
+import java.util.List;
 import labb4.IO.LogWriter;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import labb4.DataStructures.Chat;
 import labb4.DataStructures.Friend;
 import labb4.DataStructures.Message;
@@ -30,14 +30,12 @@ public class ChatDAOImp implements ChatDAO{
         Map<String, List<Message>> chats = allChats.getAllChats();
         for(String key: chats.keySet()){
             Friend newFriend = new Friend();
+            newFriend.setNick(key);
             for(int i = 0; i < friendDao.getAllFriends().size(); i++){
                 if(friendDao.getAllFriends().get(i).getNick().equals(key))
                     newFriend = friendDao.getAllFriends().get(i);
             }
-            if(newFriend.getNick().length() < 1)
-                new LogWriter(chatUser, chats.get(key));
-            else
-                new LogWriter(newFriend, chats.get(key));
+            new LogWriter(newFriend, chats.get(key));
         }
     }
     @Override
@@ -58,10 +56,17 @@ public class ChatDAOImp implements ChatDAO{
         this.chatUser.setNick(newUser);
     }
     @Override
-    public void sendMessage(String msg){
+    public void sendMessagePublic(Friend newFriend, String msg){
         if(msg.length() > 0){
-            Message newMsg = new Message(chatUser, msg);
-            allChats.addMessage(newMsg, chattingWith);
+            Message newMsg = new Message(newFriend, msg);
+            allChats.addMessage(newMsg, chatUser.getNick());
+        }
+    }
+    @Override
+    public void sendMessagePrivate(Friend newFriend, String msg){
+        if(msg.length() > 0){
+            Message newMsg = new Message(newFriend, msg);
+            allChats.addMessage(newMsg, newFriend.getNick());
         }
     }
     @Override
@@ -80,6 +85,7 @@ public class ChatDAOImp implements ChatDAO{
     public boolean isChatLoaded(String nick){
         return allChats.chatExists(nick);
     }
+    ///-----------------------------------------------------
     @Override
     public void setPublicChat(List<String> newChat){
         List<Message> newList = new ArrayList<>();
@@ -94,6 +100,24 @@ public class ChatDAOImp implements ChatDAO{
         }
         allChats.setChat(chatUser.getNick(), newList);
     }
+    @Override
+    public void setPrivateChat(List<String> newChat){
+        List<Message> newList = new ArrayList<>();
+        String nick, message;
+        for(int i = 0; i < newChat.size(); i++){
+            Friend newFriend = new Friend();
+            String temp = newChat.get(i);
+            temp = temp.substring(temp.indexOf(">")+2);
+            nick = temp.substring(0, temp.indexOf(">"));
+            newFriend.setNick(nick);
+            temp = temp.substring(temp.indexOf(">")+2);
+            message = temp.substring(0, temp.indexOf(">"));
+            Message newMsg = new Message(newFriend, message);
+            allChats.addMessage(newMsg, nick);
+        }
+    }
+    //-----------------------------------------------------------------
+    @Override
     public List<String> convertToServer(){
         String publicMessage = "<PUBLIC><%1$s><%2$s>";
         List<Message> temp = allChats.getMessages(chatUser.getNick());

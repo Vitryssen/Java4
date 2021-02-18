@@ -53,7 +53,7 @@ public class MainWindow {
     //Variables
     boolean privateMode = false;
     //Network socket
-    private Client readerThread = new Client("chatbot.miun.se", 8000);//Skolan : "chatbot.miun.se", 8000 hemma: "0.0.0.0", 8000
+    private Client readerThread = new Client(chatDao, "chatbot.miun.se", 8000);//Skolan : "chatbot.miun.se", 8000 hemma: "0.0.0.0", 8000
     public MainWindow() throws IOException{
         f=new JFrame();  
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -110,10 +110,11 @@ public class MainWindow {
                             populateFriendlist();
                             if(chatWindow.getChatLabel().getText() != "Not chatting"){
                                 if(privateMode){
+                                    //chatDao.setPrivateChat(readerThread.getPrivateMessages());
                                     loadPrivateChat();
                                 }
                                 else{
-                                    chatDao.setPublicChat(readerThread.getPublicMessages());
+                                    //chatDao.setPublicChat(readerThread.getPublicMessages());
                                     loadPublicChat();
                                 }
                             }
@@ -154,7 +155,7 @@ public class MainWindow {
                     }
                     else if(me.getButton() == 1 && !privateMode){
                         chatDao.setReciever(chatDao.getChatUser().getNick());
-                        //chatDao.sendMessage(chatWindow.getMessageInput().getText());
+                        chatDao.sendMessage(chatWindow.getMessageInput().getText());
                         readerThread.sendPublicMessage(chatWindow.getMessageInput().getText());
                         List<String> messages = chatDao.getChat(chatDao.getChatUser().getNick());
                         for(int i = 0; i < messages.size(); i++){
@@ -246,10 +247,10 @@ public class MainWindow {
     private void addPublicClick(){
         publicButton.addActionListener((ActionEvent e) -> { 
             chatWindow.getChatLabel().setText("Not chatting");
-            chatWindow.getChatText().setText("");
-            loadPublicChat();
             privateButton.setSelected(false);
             privateMode = false;
+            chatWindow.getChatText().setText("");
+            loadPublicChat();
             topWindow.getShowPanel().setVisible(false);
             topWindow.getExitPanel().setVisible(false);
         });

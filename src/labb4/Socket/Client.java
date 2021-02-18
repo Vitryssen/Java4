@@ -15,7 +15,10 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import labb4.DAO.ChatDAO;
+import labb4.DAO.ChatDAOImp;
 import labb4.DataStructures.Friend;
+import labb4.DataStructures.Message;
 
 /**
  *
@@ -44,7 +47,10 @@ public class Client implements HostListener {
     private List<String> publicMsg = new ArrayList<>();
     private List<String> privateMsg = new ArrayList<>();
     
-    public Client(String host, int port) {
+    private ChatDAO chatDao = new ChatDAOImp();
+    
+    public Client(ChatDAO newDao, String host, int port) {
+        this.chatDao = newDao;
         this.host = host;
         this.port = port;
         try {
@@ -123,13 +129,27 @@ public class Client implements HostListener {
             removeFriend(message);
         }
         else if(message.contains("<PUBLIC>")){
-            System.out.println("Public msg "+message);
             publicMsg.add(message);
+            convertToChat(message, true);
         }
         else if(message.contains("<PRIVATE>")){
             privateMsg.add(message);
-            System.out.println("Private msg "+message);
+            convertToChat(message, false);
         }
+    }
+    public void convertToChat(String old, boolean publicMode){
+        Friend newFriend = new Friend();
+        String temp = old;
+        temp = temp.substring(temp.indexOf(">")+2);
+        String nick = temp.substring(0, temp.indexOf(">"));
+        newFriend.setNick(nick);
+        temp = temp.substring(temp.indexOf(">")+2);
+        String message = temp.substring(0, temp.indexOf(">"));
+        Message newMsg = new Message(newFriend, message);
+        if(publicMode)
+            chatDao.sendMessagePublic(newFriend, message);
+        else
+            chatDao.sendMessagePrivate(newFriend, message);
     }
     public void addFriend(String newFriend){
         Friend currentFriend = new Friend();
@@ -165,6 +185,9 @@ public class Client implements HostListener {
     }
     public List<String> getPublicMessages(){
         return publicMsg;
+    }
+    public List<String> getPrivateMessages(){
+        return privateMsg;
     }
     public void setPublicChat(List<String> chat){
         publicMsg = chat;
