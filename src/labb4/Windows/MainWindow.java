@@ -24,8 +24,6 @@ import java.awt.Dimension;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
@@ -53,7 +51,7 @@ public class MainWindow {
     //Variables
     boolean privateMode = false;
     //Network socket
-    private Client readerThread = new Client(chatDao, "chatbot.miun.se", 8000);//Skolan : "chatbot.miun.se", 8000 hemma: "0.0.0.0", 8000
+    private Client readerThread = new Client(chatDao, "0.0.0.0", 8000);//Skolan : "chatbot.miun.se", 8000 hemma: "0.0.0.0", 8000
     public MainWindow() throws IOException{
         f=new JFrame();  
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
