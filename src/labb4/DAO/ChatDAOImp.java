@@ -82,11 +82,6 @@ public class ChatDAOImp implements ChatDAO{
     }
     @Override
     public void setPublicChat(List<String> newChat){
-        if(allChats.chatExists(chatUser.getNick())){
-            if(newChat.size() < allChats.getUserChat(chatUser.getNick()).size()){
-                return;
-            }
-        }
         List<Message> newList = new ArrayList<>();
         for(int i = 0; i < newChat.size(); i++){
             Friend newFriend = new Friend();
@@ -98,5 +93,16 @@ public class ChatDAOImp implements ChatDAO{
             newList.add(newMsg);
         }
         allChats.setChat(chatUser.getNick(), newList);
+    }
+    public List<String> convertToServer(){
+        String publicMessage = "<PUBLIC><%1$s><%2$s>";
+        List<Message> temp = allChats.getMessages(chatUser.getNick());
+        List<String> newList = new ArrayList<>();
+        String message;
+        for(int i = 0; i < temp.size(); i++){
+            message = String.format(publicMessage, temp.get(i).getAuthor().getNick(), temp.get(i).getMessage());
+            newList.add(message);
+        }
+        return newList;
     }
 }

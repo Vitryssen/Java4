@@ -130,7 +130,6 @@ public class Client implements HostListener {
             privateMsg.add(message);
             System.out.println("Private msg "+message);
         }
-        messages.add(message);
     }
     public void addFriend(String newFriend){
         Friend currentFriend = new Friend();
@@ -166,6 +165,9 @@ public class Client implements HostListener {
     }
     public List<String> getPublicMessages(){
         return publicMsg;
+    }
+    public void setPublicChat(List<String> chat){
+        publicMsg = chat;
     }
     private class ListenerThread extends Thread {
 

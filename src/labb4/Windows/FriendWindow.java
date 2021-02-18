@@ -9,6 +9,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -34,15 +35,17 @@ public class FriendWindow extends JPanel {
         
         namePanel.setBorder(blackline);
         namePanel.setBackground(Color.white);
+        namePanel.setLayout(new BoxLayout(namePanel, BoxLayout.Y_AXIS));
+        
         JLabel friendText = new JLabel("Friends list");
         
         friends.add(friendText, BorderLayout.NORTH);
         
         JScrollPane scroll = new JScrollPane(namePanel);
-        scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
         
-        friends.add(scroll, BorderLayout.CENTER);
-        friends.setPreferredSize(new Dimension(friendDao.getLongestNick()+30, 200)); //width determined by the longest name
+        friends.add(scroll);
+        friends.setPreferredSize(new Dimension(friendDao.getLongestNick()+10, 200)); //width determined by the longest name
     }
     public JPanel getWindow(){
         return friends;

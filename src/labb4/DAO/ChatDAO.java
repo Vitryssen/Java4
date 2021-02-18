@@ -16,6 +16,7 @@ public interface ChatDAO {
     //Functions
     public void sendMessage(String msg);
     public void saveChats();
+    public List<String> convertToServer();
     //Getters
     public List<String> getChat(String nick);
     public String getReceiever();

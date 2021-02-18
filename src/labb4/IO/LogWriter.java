@@ -29,8 +29,6 @@ public class LogWriter {
             }
             FileWriter fr = new FileWriter(file, false);
             for(int i = 0; i < msg.size(); i++){
-                System.out.println("writing to file"+" "+nick.getNick());
-                System.out.println("<"+msg.get(i).getAuthor().getNick()+msg.get(i).getAuthor().getTag()+">"+msg.get(i).getMessage());
                 fr.write("<"+msg.get(i).getAuthor().getNick()+msg.get(i).getAuthor().getTag()+">"+msg.get(i).getMessage()+"\n");
             }
             fr.close();
