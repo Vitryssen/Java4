@@ -39,6 +39,21 @@ public class ChatDAOImp implements ChatDAO{
         }
     }
     @Override
+    public void saveChat(String nick){
+        Map<String, List<Message>> chats = allChats.getAllChats();
+        for(String key: chats.keySet()){
+            if(key == nick){
+                Friend newFriend = new Friend();
+                newFriend.setNick(key);
+                for(int i = 0; i < friendDao.getAllFriends().size(); i++){
+                    if(friendDao.getAllFriends().get(i).getNick().equals(key))
+                        newFriend = friendDao.getAllFriends().get(i);
+                }
+                new LogWriter(newFriend, chats.get(key));
+            }
+        }
+    }
+    @Override
     public List<String> getChat(String nick) { 
         List<String> returnList = new ArrayList<>();
         List<Message> msgs = allChats.getMessages(nick);
@@ -84,49 +99,5 @@ public class ChatDAOImp implements ChatDAO{
     @Override
     public boolean isChatLoaded(String nick){
         return allChats.chatExists(nick);
-    }
-    ///-----------------------------------------------------
-    @Override
-    public void setPublicChat(List<String> newChat){
-        List<Message> newList = new ArrayList<>();
-        for(int i = 0; i < newChat.size(); i++){
-            Friend newFriend = new Friend();
-            String temp = newChat.get(i);
-            temp = temp.substring(temp.indexOf(">")+2);
-            newFriend.setNick(temp.substring(0, temp.indexOf(">")));
-            temp = temp.substring(temp.indexOf(">")+2);
-            Message newMsg = new Message(newFriend, temp.substring(0, temp.indexOf(">")));
-            newList.add(newMsg);
-        }
-        allChats.setChat(chatUser.getNick(), newList);
-    }
-    @Override
-    public void setPrivateChat(List<String> newChat){
-        List<Message> newList = new ArrayList<>();
-        String nick, message;
-        for(int i = 0; i < newChat.size(); i++){
-            Friend newFriend = new Friend();
-            String temp = newChat.get(i);
-            temp = temp.substring(temp.indexOf(">")+2);
-            nick = temp.substring(0, temp.indexOf(">"));
-            newFriend.setNick(nick);
-            temp = temp.substring(temp.indexOf(">")+2);
-            message = temp.substring(0, temp.indexOf(">"));
-            Message newMsg = new Message(newFriend, message);
-            allChats.addMessage(newMsg, nick);
-        }
-    }
-    //-----------------------------------------------------------------
-    @Override
-    public List<String> convertToServer(){
-        String publicMessage = "<PUBLIC><%1$s><%2$s>";
-        List<Message> temp = allChats.getMessages(chatUser.getNick());
-        List<String> newList = new ArrayList<>();
-        String message;
-        for(int i = 0; i < temp.size(); i++){
-            message = String.format(publicMessage, temp.get(i).getAuthor().getNick(), temp.get(i).getMessage());
-            newList.add(message);
-        }
-        return newList;
     }
 }

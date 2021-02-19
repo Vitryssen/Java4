@@ -68,7 +68,6 @@ public class MainWindow {
         //----------------------------------------
         readerThread.connect();
         readerThread.register(nick);
-        readerThread.setPublicChat(chatDao.convertToServer());
         writeThread();
         //----------------------------------------
         addPublicClick();

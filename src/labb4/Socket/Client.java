@@ -42,10 +42,7 @@ public class Client implements HostListener {
     private boolean connected;
     private String ip;
     
-    private List<String> messages = new ArrayList<>();
     private List<Friend> friends = new ArrayList<>();
-    private List<String> publicMsg = new ArrayList<>();
-    private List<String> privateMsg = new ArrayList<>();
     
     private ChatDAO chatDao = new ChatDAOImp();
     
@@ -71,7 +68,6 @@ public class Client implements HostListener {
 
     public void sendPublicMessage(String messageText) {
         String message = String.format(publicMessage, nickName, messageText);
-        publicMsg.add(message);
         out.println(message);
         out.flush();
     }
@@ -129,27 +125,34 @@ public class Client implements HostListener {
             removeFriend(message);
         }
         else if(message.contains("<PUBLIC>")){
-            publicMsg.add(message);
-            convertToChat(message, true);
+            addServerMessage(message, true);
         }
         else if(message.contains("<PRIVATE>")){
-            privateMsg.add(message);
-            convertToChat(message, false);
+            addServerMessage(message, false);
         }
     }
-    public void convertToChat(String old, boolean publicMode){
+    public void addServerMessage(String old, boolean publicMode){
         Friend newFriend = new Friend();
+        //-------------------------------------
         String temp = old;
         temp = temp.substring(temp.indexOf(">")+2);
         String nick = temp.substring(0, temp.indexOf(">"));
         newFriend.setNick(nick);
         temp = temp.substring(temp.indexOf(">")+2);
         String message = temp.substring(0, temp.indexOf(">"));
+        //--------------------------------------
         Message newMsg = new Message(newFriend, message);
         if(publicMode)
             chatDao.sendMessagePublic(newFriend, message);
         else
             chatDao.sendMessagePrivate(newFriend, newFriend, message);
+        
+        Thread writeToFile = new Thread(new Runnable() {
+        public void run()
+        {
+             chatDao.saveChat(nick);
+        }});  
+        writeToFile.start();
     }
     public void addFriend(String newFriend){
         Friend currentFriend = new Friend();
@@ -177,20 +180,8 @@ public class Client implements HostListener {
                 friends.remove(i);
         }
     }
-    public List<String> getInputStream(){
-        return messages;
-    }
     public List<Friend> getFriends(){
         return friends;
-    }
-    public List<String> getPublicMessages(){
-        return publicMsg;
-    }
-    public List<String> getPrivateMessages(){
-        return privateMsg;
-    }
-    public void setPublicChat(List<String> chat){
-        publicMsg = chat;
     }
     private class ListenerThread extends Thread {
 

@@ -1,7 +1,8 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * André Nordlund
+ * 2021-02-19
+ * Java 2
+ * Lab 4
  */
 package labb4.Windows;
 

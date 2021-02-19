@@ -14,10 +14,10 @@ import labb4.DataStructures.Friend;
  */
 public interface ChatDAO {
     //Functions
+    public void saveChats();
+    public void saveChat(String nick);
     public void sendMessagePublic(Friend newFriend, String msg);
     public void sendMessagePrivate(Friend author, Friend receiver, String msg);
-    public void saveChats();
-    public List<String> convertToServer();
     //Getters
     public List<String> getChat(String nick);
     public Friend getReceiever();
@@ -25,8 +25,6 @@ public interface ChatDAO {
     //Setters
     public void setReciever(String newReciever);
     public void setChatUser(String newUser);
-    public void setPublicChat(List<String> newChat);
-    public void setPrivateChat(List<String> newChat);
     //Booleans
     public boolean isChatLoaded(String nick);
 }
